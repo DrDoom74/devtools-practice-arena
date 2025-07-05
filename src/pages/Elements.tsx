@@ -56,15 +56,15 @@ const Elements = () => {
         </Card>
 
         {/* Interactive Elements */}
-        <div className="grid md:grid-cols-2 gap-4 md:gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-8">
           {/* DOM Manipulation */}
           <Card className="bg-gradient-card shadow-card">
             <CardHeader>
               <CardTitle className="text-devtools-purple">🎨 Элементы для редактирования</CardTitle>
               <CardDescription>Попробуйте изменить эти элементы через DevTools</CardDescription>
             </CardHeader>
-            <CardContent className="space-y-4 md:space-y-6">
-              <div className="space-y-3 md:space-y-4">
+            <CardContent className="space-y-3 md:space-y-6 px-3 md:px-6">
+              <div className="space-y-2 md:space-y-4">
                 <h3 
                   id="editable-heading" 
                   className="text-2xl font-bold text-primary hover:text-accent transition-smooth cursor-pointer"
@@ -116,8 +116,8 @@ const Elements = () => {
               <CardTitle className="text-devtools-green">✨ Псевдосостояния</CardTitle>
               <CardDescription>Протестируйте :hover, :focus, :active состояния</CardDescription>
             </CardHeader>
-            <CardContent className="space-y-4 md:space-y-6">
-              <div className="space-y-3 md:space-y-4">
+            <CardContent className="space-y-3 md:space-y-6 px-3 md:px-6">
+              <div className="space-y-2 md:space-y-4">
                 <Button
                   className={`w-full transition-smooth ${hoverable ? 'shadow-glow' : ''}`}
                   onMouseEnter={() => setHoverable(true)}
@@ -136,11 +136,11 @@ const Elements = () => {
                   </p>
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 md:gap-4">
-                  <Button variant="default" className="hover:shadow-glow text-sm md:text-base">
+                <div className="flex flex-col sm:flex-row gap-2 md:gap-4">
+                  <Button variant="default" className="hover:shadow-glow text-sm md:text-base flex-1">
                     Primary Button
                   </Button>
-                  <Button variant="destructive" className="hover:shadow-glow text-sm md:text-base">
+                  <Button variant="destructive" className="hover:shadow-glow text-sm md:text-base flex-1">
                     Danger Button
                   </Button>
                 </div>

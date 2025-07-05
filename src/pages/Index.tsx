@@ -113,7 +113,7 @@ const Index = () => {
                 </p>
               </div>
               <div className="space-y-4">
-                <h4 className="text-xl font-semibold text-devtools-green">⚡ Тестирование производительности</h4>
+                <h4 className="text-xl font-semibold text-devtools-green">⚡ Тестирование API</h4>
                 <p className="text-muted-foreground">
                   Анализируйте скорость загрузки, размеры файлов, время ответа API. 
                   Симулируйте медленное соединение и мобильные устройства для комплексного 

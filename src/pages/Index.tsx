@@ -165,7 +165,7 @@ const Index = () => {
           <p className="text-muted-foreground text-sm">
             Школа Алексея Клименко по тестированию ПО | {" "}
             <a 
-              href="https://t.me/klimenko_school" 
+              href="https://t.me/QA_AKlimenko" 
               target="_blank" 
               rel="noopener noreferrer"
               className="text-primary hover:text-accent transition-colors"

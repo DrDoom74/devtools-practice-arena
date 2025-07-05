@@ -56,15 +56,15 @@ const Elements = () => {
         </Card>
 
         {/* Interactive Elements */}
-        <div className="grid md:grid-cols-2 gap-8">
+        <div className="grid md:grid-cols-2 gap-4 md:gap-8">
           {/* DOM Manipulation */}
           <Card className="bg-gradient-card shadow-card">
             <CardHeader>
               <CardTitle className="text-devtools-purple">🎨 Элементы для редактирования</CardTitle>
               <CardDescription>Попробуйте изменить эти элементы через DevTools</CardDescription>
             </CardHeader>
-            <CardContent className="space-y-6">
-              <div className="space-y-4">
+            <CardContent className="space-y-4 md:space-y-6">
+              <div className="space-y-3 md:space-y-4">
                 <h3 
                   id="editable-heading" 
                   className="text-2xl font-bold text-primary hover:text-accent transition-smooth cursor-pointer"
@@ -74,7 +74,7 @@ const Elements = () => {
                 </h3>
                 
                 <p 
-                  className="text-muted-foreground p-4 rounded-lg border border-border bg-muted/50"
+                  className="text-muted-foreground p-3 md:p-4 rounded-lg border border-border bg-muted/50 text-sm md:text-base"
                   contentEditable
                   suppressContentEditableWarning={true}
                 >
@@ -103,7 +103,7 @@ const Elements = () => {
 
                 <input 
                   type="date" 
-                  className="w-full p-2 rounded-md border border-border bg-input text-foreground"
+                  className="w-full p-2 rounded-md border border-border bg-input text-foreground text-sm md:text-base"
                   defaultValue="2024-01-15"
                 />
               </div>
@@ -116,8 +116,8 @@ const Elements = () => {
               <CardTitle className="text-devtools-green">✨ Псевдосостояния</CardTitle>
               <CardDescription>Протестируйте :hover, :focus, :active состояния</CardDescription>
             </CardHeader>
-            <CardContent className="space-y-6">
-              <div className="space-y-4">
+            <CardContent className="space-y-4 md:space-y-6">
+              <div className="space-y-3 md:space-y-4">
                 <Button
                   className={`w-full transition-smooth ${hoverable ? 'shadow-glow' : ''}`}
                   onMouseEnter={() => setHoverable(true)}
@@ -127,26 +127,26 @@ const Elements = () => {
                   Наведите курсор (или примените :hover в DevTools)
                 </Button>
 
-                <div className="group p-4 rounded-lg border border-border bg-muted/30 hover:bg-accent/20 hover:border-accent transition-smooth cursor-pointer">
-                  <h4 className="font-semibold group-hover:text-accent transition-smooth">
+                <div className="group p-3 md:p-4 rounded-lg border border-border bg-muted/30 hover:bg-accent/20 hover:border-accent transition-smooth cursor-pointer">
+                  <h4 className="font-semibold group-hover:text-accent transition-smooth text-sm md:text-base">
                     Карточка с hover-эффектом
                   </h4>
-                  <p className="text-sm text-muted-foreground group-hover:text-accent-foreground">
+                  <p className="text-xs md:text-sm text-muted-foreground group-hover:text-accent-foreground">
                     При наведении меняется фон и цвет текста
                   </p>
                 </div>
 
-                <div className="grid grid-cols-2 gap-4">
-                  <Button variant="default" className="hover:shadow-glow">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 md:gap-4">
+                  <Button variant="default" className="hover:shadow-glow text-sm md:text-base">
                     Primary Button
                   </Button>
-                  <Button variant="destructive" className="hover:shadow-glow">
+                  <Button variant="destructive" className="hover:shadow-glow text-sm md:text-base">
                     Danger Button
                   </Button>
                 </div>
 
-                <div className="p-4 rounded-lg bg-gradient-primary/10 border border-primary/20">
-                  <p className="text-sm">
+                <div className="p-3 md:p-4 rounded-lg bg-gradient-primary/10 border border-primary/20">
+                  <p className="text-xs md:text-sm">
                     <strong>💡 Совет:</strong> В DevTools → Elements → Styles найдите 
                     элемент и нажмите :hov, чтобы принудительно применить псевдосостояния.
                   </p>

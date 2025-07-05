@@ -67,7 +67,6 @@ const Elements = () => {
             <CardContent className="space-y-3 md:space-y-6 px-3 md:px-6">
               <div className="space-y-2 md:space-y-4">
                 <h3 
-                  id="editable-heading" 
                   className="text-2xl font-bold text-primary hover:text-accent transition-smooth cursor-pointer"
                   data-testid="main-heading"
                 >
@@ -108,10 +107,11 @@ const Elements = () => {
                     className="flex-1 p-2 rounded-md border border-border bg-input text-foreground text-sm md:text-base"
                     defaultValue="2024-01-15"
                   />
+                  {/* Decorative calendar icon for search practice */}
                   <Calendar 
                     id="calendar-icon"
                     data-element="calendar"
-                    className="calendar-selector-practice w-6 h-6 text-primary hover:text-accent transition-smooth cursor-pointer"
+                    className="calendar-selector-practice w-6 h-6 text-primary hover:text-accent transition-smooth"
                   />
                 </div>
               </div>
@@ -167,8 +167,8 @@ const Elements = () => {
         {/* Selector Practice Section */}
         <Card className="mt-8 bg-gradient-card shadow-card">
           <CardHeader>
-            <CardTitle className="text-devtools-blue">🎯 Практика поиска элементов и селекторов</CardTitle>
-            <CardDescription>Попробуйте найти эти элементы через Inspect Element и скопировать их селекторы</CardDescription>
+            <CardTitle className="text-devtools-blue">🎯 Практика поиска элементов</CardTitle>
+            <CardDescription>Попробуйте найти эти элементы через Inspect Element или поиск по селектору (Ctrl+F в панели Elements)</CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
             <div className="grid md:grid-cols-2 gap-6">
@@ -198,14 +198,14 @@ const Elements = () => {
                     data-testid="automation-target"
                     className="inline-block p-2 bg-muted/50 border border-border rounded text-sm"
                   >
-                    data-qa="test-element"
+                    Элемент с data-qa="test-element"
                   </span>
                   <div 
                     data-role="navigation-item"
                     data-index="42"
                     className="p-3 bg-secondary/30 border border-secondary/50 rounded-lg text-sm"
                   >
-                    Multiple data attributes
+                    Элемент с несколькими data-атрибутами
                   </div>
                 </div>
               </div>
@@ -213,6 +213,9 @@ const Elements = () => {
 
             <div className="space-y-4">
               <h4 className="font-semibold text-devtools-orange">🎨 Элементы с множественными классами:</h4>
+              <p className="text-xs text-muted-foreground mb-3">
+                Каждый элемент имеет несколько CSS-классов. Используйте комбинированные селекторы (.class1.class2.class3)
+              </p>
               <div className="grid sm:grid-cols-2 md:grid-cols-4 gap-3">
                 <div className="highlight important practice text-center p-3 bg-gradient-primary/20 border border-primary/30 rounded-lg text-sm">
                   .highlight.important.practice
@@ -231,23 +234,17 @@ const Elements = () => {
 
             <div className="space-y-4">
               <h4 className="font-semibold text-devtools-red">🔗 Практика nth-child селекторов:</h4>
+              <p className="text-xs text-muted-foreground mb-3">
+                Используйте специфичные селекторы: .practice-list li:nth-child(2) или ul.practice-list li:first-child
+              </p>
               <ul className="practice-list space-y-2">
-                <li className="list-item p-2 bg-muted/30 border-l-4 border-primary text-sm">Первый элемент списка (li:first-child)</li>
-                <li className="list-item p-2 bg-muted/30 border-l-4 border-accent text-sm">Второй элемент списка (li:nth-child(2))</li>
-                <li className="list-item p-2 bg-muted/30 border-l-4 border-secondary text-sm">Третий элемент списка (li:nth-child(3))</li>
-                <li className="list-item p-2 bg-muted/30 border-l-4 border-muted-foreground text-sm">Последний элемент списка (li:last-child)</li>
+                <li className="practice-list-item p-2 bg-muted/30 border-l-4 border-primary text-sm">Первый элемент (.practice-list li:first-child)</li>
+                <li className="practice-list-item p-2 bg-muted/30 border-l-4 border-accent text-sm">Второй элемент (.practice-list li:nth-child(2))</li>
+                <li className="practice-list-item p-2 bg-muted/30 border-l-4 border-secondary text-sm">Третий элемент (.practice-list li:nth-child(3))</li>
+                <li className="practice-list-item p-2 bg-muted/30 border-l-4 border-muted-foreground text-sm">Последний элемент (.practice-list li:last-child)</li>
               </ul>
             </div>
 
-            <div className="p-4 bg-gradient-accent/10 border border-accent/20 rounded-lg">
-              <h5 className="font-semibold text-accent mb-2">💡 Инструкция по копированию селекторов:</h5>
-              <ol className="text-sm space-y-1 text-muted-foreground">
-                <li>1. Кликните ПКМ на любом элементе выше → "Inspect Element"</li>
-                <li>2. В панели Elements найдите нужный элемент</li>
-                <li>3. Кликните ПКМ на элементе в HTML → Copy → Copy selector</li>
-                <li>4. Попробуйте разные типы селекторов: ID, class, attribute, nth-child</li>
-              </ol>
-            </div>
           </CardContent>
         </Card>
 

@@ -39,13 +39,13 @@ const Index = () => {
         {/* Hero Section */}
         <div className="text-center mb-16">
           <div className="mb-8">
-            <div className="w-24 h-24 bg-gradient-primary rounded-2xl mx-auto mb-6 flex items-center justify-center shadow-glow">
-              <span className="text-4xl">🛠</span>
+            <div className="w-16 h-16 md:w-24 md:h-24 bg-gradient-primary rounded-2xl mx-auto mb-4 md:mb-6 flex items-center justify-center shadow-glow">
+              <span className="text-2xl md:text-4xl">🛠</span>
             </div>
-            <h1 className="text-5xl font-bold mb-6 bg-gradient-primary bg-clip-text text-transparent">
+            <h1 className="text-3xl md:text-5xl font-bold mb-4 md:mb-6 bg-gradient-primary bg-clip-text text-transparent px-4">
               Chrome DevTools Тренажер
             </h1>
-            <p className="text-xl text-muted-foreground max-w-3xl mx-auto mb-8">
+            <p className="text-base md:text-xl text-muted-foreground max-w-3xl mx-auto mb-6 md:mb-8 px-4">
               Интерактивная практика по самым важным вкладкам Chrome DevTools для QA инженеров. 
               Изучайте, тестируйте и совершенствуйте навыки отладки веб-приложений.
             </p>
@@ -141,16 +141,16 @@ const Index = () => {
         </Card>
 
         {/* Call to Action */}
-        <div className="text-center">
-          <div className="max-w-2xl mx-auto">
-            <h3 className="text-3xl font-bold mb-4">Готовы начать?</h3>
+        <div className="text-center mb-16">
+          <div className="max-w-2xl mx-auto px-4">
+            <h3 className="text-2xl md:text-3xl font-bold mb-4">Готовы начать?</h3>
             <p className="text-muted-foreground mb-8">
               Выберите любую вкладку DevTools и начните интерактивное обучение. 
               Каждый раздел содержит практические упражнения и детальные объяснения.
             </p>
             <div className="flex flex-wrap justify-center gap-4">
               {features.map((feature, index) => (
-                <Button key={index} asChild variant="outline" className="hover:shadow-glow">
+                <Button key={index} asChild variant="outline" className="hover:shadow-glow text-sm">
                   <Link to={feature.link}>
                     {feature.title}
                   </Link>
@@ -158,6 +158,21 @@ const Index = () => {
               ))}
             </div>
           </div>
+        </div>
+
+        {/* Footer */}
+        <div className="text-center border-t border-border pt-8">
+          <p className="text-muted-foreground text-sm">
+            Школа Алексея Клименко по тестированию ПО | {" "}
+            <a 
+              href="https://t.me/klimenko_school" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="text-primary hover:text-accent transition-colors"
+            >
+              Телеграм канал
+            </a>
+          </p>
         </div>
       </div>
     </div>

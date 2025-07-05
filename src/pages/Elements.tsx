@@ -4,6 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Calendar } from "lucide-react";
 
 const Elements = () => {
   const [hoverable, setHoverable] = useState(false);
@@ -101,11 +102,18 @@ const Elements = () => {
                   </SelectContent>
                 </Select>
 
-                <input 
-                  type="date" 
-                  className="w-full p-2 rounded-md border border-border bg-input text-foreground text-sm md:text-base"
-                  defaultValue="2024-01-15"
-                />
+                <div className="flex items-center gap-2">
+                  <input 
+                    type="date" 
+                    className="flex-1 p-2 rounded-md border border-border bg-input text-foreground text-sm md:text-base"
+                    defaultValue="2024-01-15"
+                  />
+                  <Calendar 
+                    id="calendar-icon"
+                    data-element="calendar"
+                    className="calendar-selector-practice w-6 h-6 text-primary hover:text-accent transition-smooth cursor-pointer"
+                  />
+                </div>
               </div>
             </CardContent>
           </Card>
@@ -155,6 +163,93 @@ const Elements = () => {
             </CardContent>
           </Card>
         </div>
+
+        {/* Selector Practice Section */}
+        <Card className="mt-8 bg-gradient-card shadow-card">
+          <CardHeader>
+            <CardTitle className="text-devtools-blue">🎯 Практика поиска элементов и селекторов</CardTitle>
+            <CardDescription>Попробуйте найти эти элементы через Inspect Element и скопировать их селекторы</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            <div className="grid md:grid-cols-2 gap-6">
+              <div className="space-y-4">
+                <h4 className="font-semibold text-devtools-green">🔍 Элементы с уникальными ID:</h4>
+                <div className="space-y-3">
+                  <div 
+                    id="practice-element"
+                    className="p-3 bg-primary/10 border border-primary/20 rounded-lg text-sm"
+                  >
+                    Элемент с ID: #practice-element
+                  </div>
+                  <button 
+                    id="unique-button"
+                    className="px-4 py-2 bg-accent/20 hover:bg-accent/30 border border-accent/40 rounded-md text-sm transition-smooth"
+                  >
+                    Кнопка с ID: #unique-button
+                  </button>
+                </div>
+              </div>
+
+              <div className="space-y-4">
+                <h4 className="font-semibold text-devtools-purple">📝 Элементы с data-атрибутами:</h4>
+                <div className="space-y-3">
+                  <span 
+                    data-qa="test-element"
+                    data-testid="automation-target"
+                    className="inline-block p-2 bg-muted/50 border border-border rounded text-sm"
+                  >
+                    data-qa="test-element"
+                  </span>
+                  <div 
+                    data-role="navigation-item"
+                    data-index="42"
+                    className="p-3 bg-secondary/30 border border-secondary/50 rounded-lg text-sm"
+                  >
+                    Multiple data attributes
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="space-y-4">
+              <h4 className="font-semibold text-devtools-orange">🎨 Элементы с множественными классами:</h4>
+              <div className="grid sm:grid-cols-2 md:grid-cols-4 gap-3">
+                <div className="highlight important practice text-center p-3 bg-gradient-primary/20 border border-primary/30 rounded-lg text-sm">
+                  .highlight.important.practice
+                </div>
+                <div className="card primary featured text-center p-3 bg-accent/20 border border-accent/30 rounded-lg text-sm">
+                  .card.primary.featured
+                </div>
+                <div className="item list-element active text-center p-3 bg-secondary/20 border border-secondary/30 rounded-lg text-sm">
+                  .item.list-element.active
+                </div>
+                <div className="component ui-element interactive text-center p-3 bg-muted/30 border border-border rounded-lg text-sm">
+                  .component.ui-element.interactive
+                </div>
+              </div>
+            </div>
+
+            <div className="space-y-4">
+              <h4 className="font-semibold text-devtools-red">🔗 Практика nth-child селекторов:</h4>
+              <ul className="practice-list space-y-2">
+                <li className="list-item p-2 bg-muted/30 border-l-4 border-primary text-sm">Первый элемент списка (li:first-child)</li>
+                <li className="list-item p-2 bg-muted/30 border-l-4 border-accent text-sm">Второй элемент списка (li:nth-child(2))</li>
+                <li className="list-item p-2 bg-muted/30 border-l-4 border-secondary text-sm">Третий элемент списка (li:nth-child(3))</li>
+                <li className="list-item p-2 bg-muted/30 border-l-4 border-muted-foreground text-sm">Последний элемент списка (li:last-child)</li>
+              </ul>
+            </div>
+
+            <div className="p-4 bg-gradient-accent/10 border border-accent/20 rounded-lg">
+              <h5 className="font-semibold text-accent mb-2">💡 Инструкция по копированию селекторов:</h5>
+              <ol className="text-sm space-y-1 text-muted-foreground">
+                <li>1. Кликните ПКМ на любом элементе выше → "Inspect Element"</li>
+                <li>2. В панели Elements найдите нужный элемент</li>
+                <li>3. Кликните ПКМ на элементе в HTML → Copy → Copy selector</li>
+                <li>4. Попробуйте разные типы селекторов: ID, class, attribute, nth-child</li>
+              </ol>
+            </div>
+          </CardContent>
+        </Card>
 
         {/* Advanced Features */}
         <Card className="mt-8 bg-gradient-card shadow-card">

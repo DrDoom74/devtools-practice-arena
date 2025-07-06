@@ -11,25 +11,105 @@ const Console = () => {
   const [selectedElement, setSelectedElement] = useState<string>("");
 
   const executeCode = () => {
+    // Проверка длины кода
+    if (jsCode.length > 500) {
+      setOutput(prev => [...prev, `> ${jsCode.substring(0, 50)}...`, `❌ Ошибка: Код превышает лимит в 500 символов`]);
+      return;
+    }
+
+    // Проверка на опасные функции
+    const dangerousPatterns = [
+      /window\.location/i,
+      /localStorage/i,
+      /sessionStorage/i,
+      /document\.write/i,
+      /document\.writeln/i,
+      /\beval\s*\(/i,
+      /new\s+Function/i,
+      /XMLHttpRequest/i,
+      /\bfetch\s*\(/i,
+      /setTimeout/i,
+      /setInterval/i,
+      /document\.cookie/i,
+      /window\.open/i,
+      /history\./i,
+      /navigator\./i,
+      /location\./i
+    ];
+
+    const foundDangerous = dangerousPatterns.find(pattern => pattern.test(jsCode));
+    if (foundDangerous) {
+      setOutput(prev => [...prev, 
+        `> ${jsCode}`, 
+        `⚠️ Предупреждение: Обнаружена потенциально опасная операция`,
+        `🔒 Песочница ограничивает доступ к: window.location, localStorage, document.write, eval, fetch и другим системным API`
+      ]);
+      return;
+    }
+
     try {
-      // Создаем безопасную среду выполнения
-      const result = new Function(`
-        const log = (msg) => ({ type: 'log', message: String(msg) });
-        const error = (msg) => ({ type: 'error', message: String(msg) });
-        const warn = (msg) => ({ type: 'warn', message: String(msg) });
+      // Создаем безопасную среду выполнения с таймаутом
+      const timeoutPromise = new Promise((_, reject) => {
+        setTimeout(() => reject(new Error('Превышено время выполнения (3 сек)')), 3000);
+      });
+
+      const executionPromise = new Promise((resolve, reject) => {
+        try {
+          // Создаем ограниченную среду
+          const safeGlobals = {
+            Math: Math,
+            Date: Date,
+            JSON: JSON,
+            parseInt: parseInt,
+            parseFloat: parseFloat,
+            isNaN: isNaN,
+            isFinite: isFinite,
+            String: String,
+            Number: Number,
+            Boolean: Boolean,
+            Array: Array,
+            Object: Object
+          };
+
+          const result = new Function(`
+            // Безопасные функции консоли
+            const log = (msg) => ({ type: 'log', message: String(msg) });
+            const error = (msg) => ({ type: 'error', message: String(msg) });
+            const warn = (msg) => ({ type: 'warn', message: String(msg) });
+            
+            // Безопасные DOM функции
+            const querySelector = (selector) => document.querySelector(selector);
+            const querySelectorAll = (selector) => Array.from(document.querySelectorAll(selector));
+            const getElementById = (id) => document.getElementById(id);
+            
+            // Симуляция DevTools переменных
+            const $0 = document.querySelector('#console-demo-element');
+            const $1 = document.querySelector('.console-card');
+            
+            // Доступные глобальные объекты
+            const { Math, Date, JSON, parseInt, parseFloat, isNaN, isFinite, String, Number, Boolean, Array, Object } = arguments[0];
+            
+            const result = (function() {
+              ${jsCode}
+            })();
+            
+            return result !== undefined ? String(result) : 'undefined';
+          `)(safeGlobals);
+          
+          resolve(result);
+        } catch (err) {
+          reject(err);
+        }
+      });
+
+      Promise.race([executionPromise, timeoutPromise])
+        .then(result => {
+          setOutput(prev => [...prev, `> ${jsCode}`, `< ${result}`]);
+        })
+        .catch(error => {
+          setOutput(prev => [...prev, `> ${jsCode}`, `❌ Error: ${error.message}`]);
+        });
         
-        // Симуляция популярных DevTools функций
-        window.$0 = document.querySelector('#console-demo-element');
-        window.$1 = document.querySelector('.console-card');
-        
-        const result = (function() {
-          ${jsCode}
-        })();
-        
-        return result !== undefined ? String(result) : 'undefined';
-      `)();
-      
-      setOutput(prev => [...prev, `> ${jsCode}`, `< ${result}`]);
     } catch (error) {
       setOutput(prev => [...prev, `> ${jsCode}`, `❌ Error: ${error.message}`]);
     }
@@ -241,6 +321,9 @@ const Console = () => {
                 >
                   Показать таблицу
                 </Button>
+                <p className="text-xs text-muted-foreground text-center mt-1">
+                  Отображает таблицу с горячими клавишами DevTools в консоли браузера (F12)
+                </p>
               </div>
 
               {/* Quick Commands */}

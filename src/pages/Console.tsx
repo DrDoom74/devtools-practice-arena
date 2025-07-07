@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Navigation from "@/components/Navigation";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -6,115 +6,60 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 
 const Console = () => {
-  const [jsCode, setJsCode] = useState("");
   const [output, setOutput] = useState<string[]>([]);
   const [selectedElement, setSelectedElement] = useState<string>("");
+  
+  // Async testing states
+  const [notificationMessage, setNotificationMessage] = useState("");
+  const [currentTime, setCurrentTime] = useState("");
+  const [timerActive, setTimerActive] = useState(false);
+  const [intervalId, setIntervalId] = useState<NodeJS.Timeout | null>(null);
 
-  const executeCode = () => {
-    // Проверка длины кода
-    if (jsCode.length > 500) {
-      setOutput(prev => [...prev, `> ${jsCode.substring(0, 50)}...`, `❌ Ошибка: Код превышает лимит в 500 символов`]);
-      return;
-    }
-
-    // Проверка на опасные функции
-    const dangerousPatterns = [
-      /window\.location/i,
-      /localStorage/i,
-      /sessionStorage/i,
-      /document\.write/i,
-      /document\.writeln/i,
-      /\beval\s*\(/i,
-      /new\s+Function/i,
-      /XMLHttpRequest/i,
-      /\bfetch\s*\(/i,
-      /setTimeout/i,
-      /setInterval/i,
-      /document\.cookie/i,
-      /window\.open/i,
-      /history\./i,
-      /navigator\./i,
-      /location\./i
-    ];
-
-    const foundDangerous = dangerousPatterns.find(pattern => pattern.test(jsCode));
-    if (foundDangerous) {
-      setOutput(prev => [...prev, 
-        `> ${jsCode}`, 
-        `⚠️ Предупреждение: Обнаружена потенциально опасная операция`,
-        `🔒 Песочница ограничивает доступ к: window.location, localStorage, document.write, eval, fetch и другим системным API`
-      ]);
-      return;
-    }
-
-    try {
-      // Создаем безопасную среду выполнения с таймаутом
-      const timeoutPromise = new Promise((_, reject) => {
-        setTimeout(() => reject(new Error('Превышено время выполнения (3 сек)')), 3000);
-      });
-
-      const executionPromise = new Promise((resolve, reject) => {
-        try {
-          // Создаем ограниченную среду
-          const safeGlobals = {
-            Math: Math,
-            Date: Date,
-            JSON: JSON,
-            parseInt: parseInt,
-            parseFloat: parseFloat,
-            isNaN: isNaN,
-            isFinite: isFinite,
-            String: String,
-            Number: Number,
-            Boolean: Boolean,
-            Array: Array,
-            Object: Object
-          };
-
-          const result = new Function(`
-            // Безопасные функции консоли
-            const log = (msg) => ({ type: 'log', message: String(msg) });
-            const error = (msg) => ({ type: 'error', message: String(msg) });
-            const warn = (msg) => ({ type: 'warn', message: String(msg) });
-            
-            // Безопасные DOM функции
-            const querySelector = (selector) => document.querySelector(selector);
-            const querySelectorAll = (selector) => Array.from(document.querySelectorAll(selector));
-            const getElementById = (id) => document.getElementById(id);
-            
-            // Симуляция DevTools переменных
-            const $0 = document.querySelector('#console-demo-element');
-            const $1 = document.querySelector('.console-card');
-            
-            // Доступные глобальные объекты
-            const { Math, Date, JSON, parseInt, parseFloat, isNaN, isFinite, String, Number, Boolean, Array, Object } = arguments[0];
-            
-            const result = (function() {
-              ${jsCode}
-            })();
-            
-            return result !== undefined ? String(result) : 'undefined';
-          `)(safeGlobals);
-          
-          resolve(result);
-        } catch (err) {
-          reject(err);
-        }
-      });
-
-      Promise.race([executionPromise, timeoutPromise])
-        .then(result => {
-          setOutput(prev => [...prev, `> ${jsCode}`, `< ${result}`]);
-        })
-        .catch(error => {
-          setOutput(prev => [...prev, `> ${jsCode}`, `❌ Error: ${error.message}`]);
-        });
-        
-    } catch (error) {
-      setOutput(prev => [...prev, `> ${jsCode}`, `❌ Error: ${error.message}`]);
-    }
-    setJsCode("");
+  // Async testing functions
+  const showNotificationAfterDelay = () => {
+    setNotificationMessage(""); // Reset message
+    console.log("⏰ Запущен таймер на 2 секунды");
+    
+    setTimeout(() => {
+      setNotificationMessage("Уведомление появилось!");
+      console.log("✅ Уведомление показано через 2 секунды");
+    }, 2000);
   };
+
+  const startTimer = () => {
+    if (timerActive) return;
+    
+    setTimerActive(true);
+    setCurrentTime(new Date().toLocaleTimeString());
+    console.log("⏰ Таймер запущен");
+    
+    const id = setInterval(() => {
+      const newTime = new Date().toLocaleTimeString();
+      setCurrentTime(newTime);
+      console.log("🕐 Время обновлено:", newTime);
+    }, 1000);
+    
+    setIntervalId(id);
+  };
+
+  const stopTimer = () => {
+    if (intervalId) {
+      clearInterval(intervalId);
+      setIntervalId(null);
+      setTimerActive(false);
+      console.log("⏹️ Таймер остановлен");
+      setCurrentTime("Таймер остановлен.");
+    }
+  };
+
+  // Cleanup interval on unmount
+  useEffect(() => {
+    return () => {
+      if (intervalId) {
+        clearInterval(intervalId);
+      }
+    };
+  }, [intervalId]);
 
   const generateError = () => {
     try {
@@ -212,49 +157,83 @@ const Console = () => {
         </Card>
 
         <div className="grid lg:grid-cols-2 gap-8">
-          {/* JavaScript Executor */}
+          {/* Async Testing */}
           <Card className="bg-gradient-card shadow-card">
             <CardHeader>
-              <CardTitle className="text-devtools-purple">⚡ JavaScript Песочница</CardTitle>
-              <CardDescription>Выполните JavaScript код и посмотрите результат</CardDescription>
+              <CardTitle className="text-devtools-purple">⏱️ Тестирование асинхронного кода</CardTitle>
+              <CardDescription>Практика работы с setTimeout, setInterval и отладки</CardDescription>
             </CardHeader>
-            <CardContent className="space-y-4">
-              <Textarea
-                value={jsCode}
-                onChange={(e) => setJsCode(e.target.value)}
-                placeholder="Введите JavaScript код..."
-                className="font-mono min-h-[120px]"
-                rows={5}
-              />
-              
-              <div className="flex gap-2">
-                <Button onClick={executeCode} className="flex-1">
-                  Выполнить код
+            <CardContent className="space-y-6">
+              {/* Notification Test */}
+              <div className="space-y-3">
+                <h4 className="font-semibold text-devtools-blue">🔔 Уведомление с задержкой</h4>
+                <Button 
+                  onClick={showNotificationAfterDelay}
+                  variant="outline" 
+                  className="w-full"
+                >
+                  Показать уведомление (через 2 секунды)
                 </Button>
-                <Button onClick={clearOutput} variant="outline">
-                  Очистить
-                </Button>
-              </div>
-
-              {/* Output */}
-              <div className="bg-muted/30 rounded-lg p-4 min-h-[200px] font-mono text-sm">
-                <div className="text-devtools-green mb-2">Результат выполнения:</div>
-                {output.length === 0 ? (
-                  <div className="text-muted-foreground">Результаты выполнения появятся здесь...</div>
-                ) : (
-                  <div className="space-y-1">
-                    {output.map((line, index) => (
-                      <div key={index} className={
-                        line.startsWith('>') ? 'text-foreground' :
-                        line.startsWith('❌') ? 'text-destructive' :
-                        line.startsWith('🚨') ? 'text-devtools-orange' :
-                        'text-devtools-blue'
-                      }>
-                        {line}
-                      </div>
-                    ))}
+                
+                {notificationMessage && (
+                  <div className="bg-devtools-green/10 border border-devtools-green/30 rounded-lg p-3 text-center">
+                    <span className="text-devtools-green font-semibold">{notificationMessage}</span>
                   </div>
                 )}
+                
+                <div className="bg-muted/50 p-3 rounded-lg text-xs">
+                  <div className="text-devtools-blue font-semibold mb-1">QA-чеклист:</div>
+                  <ul className="text-muted-foreground space-y-1">
+                    <li>• Сообщение появляется строго через 2 секунды</li>
+                    <li>• При повторном клике текст сбрасывается и появляется заново</li>
+                    <li>• В DevTools → Console нет ошибок</li>
+                    <li>• Можно поставить breakpoint на строчке setTimeout</li>
+                  </ul>
+                </div>
+              </div>
+
+              {/* Timer Test */}
+              <div className="space-y-3">
+                <h4 className="font-semibold text-devtools-orange">🕐 Интервал с обновлением времени</h4>
+                
+                <div className="flex gap-2">
+                  <Button 
+                    onClick={startTimer}
+                    disabled={timerActive}
+                    variant="outline" 
+                    className="flex-1"
+                  >
+                    Запустить таймер
+                  </Button>
+                  <Button 
+                    onClick={stopTimer}
+                    disabled={!timerActive}
+                    variant="outline" 
+                    className="flex-1"
+                  >
+                    Остановить
+                  </Button>
+                </div>
+
+                <div className="bg-muted/30 rounded-lg p-4 text-center font-mono">
+                  <div className="text-sm text-muted-foreground mb-1">Текущее время:</div>
+                  <div className="text-lg font-semibold text-devtools-green">
+                    {currentTime || "Таймер не запущен"}
+                  </div>
+                  <div className="text-xs text-muted-foreground mt-2">
+                    Статус: {timerActive ? "🟢 Активен" : "🔴 Остановлен"}
+                  </div>
+                </div>
+                
+                <div className="bg-muted/50 p-3 rounded-lg text-xs">
+                  <div className="text-devtools-orange font-semibold mb-1">QA-чеклист:</div>
+                  <ul className="text-muted-foreground space-y-1">
+                    <li>• Время обновляется раз в секунду</li>
+                    <li>• После нажатия "Остановить" оно перестаёт обновляться</li>
+                    <li>• Проверить в DevTools → Network, что ничего не загружается</li>
+                    <li>• Проверить в Console, что нет setInterval без clearInterval</li>
+                  </ul>
+                </div>
               </div>
             </CardContent>
           </Card>

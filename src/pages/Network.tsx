@@ -343,7 +343,7 @@ const Network = () => {
                 <ul className="text-sm space-y-2 text-muted-foreground">
                   <li>1. Откройте DevTools (F12)</li>
                   <li>2. Перейдите на вкладку Network</li>
-                  <li>3. Нажмите на иконку настроек (⚙️) или Network conditions</li>
+                  <li>3. Нажмите на иконку More network conditions</li>
                   <li>4. Снимите галочку "Use browser default"</li>
                   <li>5. Выберите другой User Agent из списка</li>
                   <li>6. Или введите свой кастомный User Agent</li>

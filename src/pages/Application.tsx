@@ -10,8 +10,56 @@ const Application = () => {
   const [theme, setTheme] = useState("dark");
   const [language, setLanguage] = useState("ru");
   const [username, setUsername] = useState("");
+  const [usernameError, setUsernameError] = useState("");
+  const [isUsernameValid, setIsUsernameValid] = useState(true);
   const [storageData, setStorageData] = useState<{[key: string]: string}>({});
   const { toast } = useToast();
+
+  // Валидация имени пользователя
+  const validateUsername = (value: string): { isValid: boolean; error: string } => {
+    if (!value.trim()) {
+      return { isValid: true, error: "" }; // Пустое значение допустимо
+    }
+
+    // Проверка длины
+    if (value.length > 50) {
+      return { isValid: false, error: "Имя пользователя не может быть длиннее 50 символов" };
+    }
+
+    // Проверка на разрешенные символы (латиница, кириллица, цифры, пробелы, дефис, подчеркивание)
+    const allowedPattern = /^[a-zA-Zа-яА-ЯёЁ0-9\s\-_]+$/;
+    if (!allowedPattern.test(value)) {
+      return { isValid: false, error: "Разрешены только буквы, цифры, пробелы, дефис и подчеркивание" };
+    }
+
+    // Проверка на потенциально опасные конструкции
+    const dangerousPatterns = [
+      /<[^>]*>/g, // HTML теги
+      /javascript:/i,
+      /onclick/i,
+      /onload/i,
+      /onerror/i,
+      /script/i,
+      /&[#\w]+;/g // HTML entities
+    ];
+
+    for (const pattern of dangerousPatterns) {
+      if (pattern.test(value)) {
+        return { isValid: false, error: "Обнаружены недопустимые символы или конструкции" };
+      }
+    }
+
+    return { isValid: true, error: "" };
+  };
+
+  // Санитизация имени пользователя
+  const sanitizeUsername = (value: string): string => {
+    return value
+      .replace(/<[^>]*>/g, '') // Удаляем HTML теги
+      .replace(/&[#\w]+;/g, '') // Удаляем HTML entities
+      .replace(/[<>&"']/g, '') // Удаляем опасные символы
+      .trim(); // Убираем лишние пробелы
+  };
 
   // Загружаем данные из localStorage при инициализации
   useEffect(() => {
@@ -63,7 +111,31 @@ const Application = () => {
     });
   };
 
+  // Обработка изменения имени пользователя с валидацией
+  const handleUsernameChange = (value: string) => {
+    const sanitizedValue = sanitizeUsername(value);
+    setUsername(sanitizedValue);
+    
+    const validation = validateUsername(sanitizedValue);
+    setIsUsernameValid(validation.isValid);
+    setUsernameError(validation.error);
+    
+    // Логируем попытки ввода опасного контента (для демонстрации)
+    if (!validation.isValid) {
+      console.warn("Попытка ввода недопустимого содержимого:", { original: value, sanitized: sanitizedValue, error: validation.error });
+    }
+  };
+
   const saveUsername = () => {
+    if (!isUsernameValid) {
+      toast({
+        title: "Ошибка валидации",
+        description: "Исправьте ошибки в имени пользователя перед сохранением",
+        variant: "destructive"
+      });
+      return;
+    }
+
     localStorage.setItem("devtools-username", username);
     loadStorageData();
     
@@ -227,15 +299,41 @@ const Application = () => {
               {/* Username */}
               <div className="space-y-2">
                 <label className="text-sm font-medium">Имя пользователя:</label>
-                <div className="flex space-x-2">
-                  <Input
-                    value={username}
-                    onChange={(e) => setUsername(e.target.value)}
-                    placeholder="Введите имя..."
-                  />
-                  <Button onClick={saveUsername}>
-                    Сохранить
-                  </Button>
+                <div className="space-y-2">
+                  <div className="flex space-x-2">
+                    <Input
+                      value={username}
+                      onChange={(e) => handleUsernameChange(e.target.value)}
+                      placeholder="Введите имя..."
+                      className={!isUsernameValid ? "border-destructive focus-visible:ring-destructive" : ""}
+                      maxLength={50}
+                    />
+                    <Button 
+                      onClick={saveUsername}
+                      disabled={!isUsernameValid || !username.trim()}
+                    >
+                      Сохранить
+                    </Button>
+                  </div>
+                  
+                  {/* Подсказка с правилами */}
+                  <p className="text-xs text-muted-foreground">
+                    Разрешены буквы, цифры, пробелы, дефис и подчеркивание (макс. 50 символов)
+                  </p>
+                  
+                  {/* Сообщение об ошибке */}
+                  {usernameError && (
+                    <p className="text-sm text-destructive font-medium">
+                      ⚠️ {usernameError}
+                    </p>
+                  )}
+                  
+                  {/* Индикатор валидного ввода */}
+                  {username.trim() && isUsernameValid && (
+                    <p className="text-sm text-green-600 font-medium">
+                      ✅ Имя пользователя корректно
+                    </p>
+                  )}
                 </div>
               </div>
 

@@ -10,6 +10,7 @@ const Application = () => {
   const [theme, setTheme] = useState("dark");
   const [language, setLanguage] = useState("ru");
   const [username, setUsername] = useState("");
+  const [savedUsername, setSavedUsername] = useState(""); // Сохраненное имя для отображения
   const [usernameError, setUsernameError] = useState("");
   const [isUsernameValid, setIsUsernameValid] = useState(true);
   const [storageData, setStorageData] = useState<{[key: string]: string}>({});
@@ -65,11 +66,12 @@ const Application = () => {
   useEffect(() => {
     const savedTheme = localStorage.getItem("devtools-theme") || "dark";
     const savedLanguage = localStorage.getItem("devtools-language") || "ru";
-    const savedUsername = localStorage.getItem("devtools-username") || "";
+    const savedUsernameFromStorage = localStorage.getItem("devtools-username") || "";
     
     setTheme(savedTheme);
     setLanguage(savedLanguage);
-    setUsername(savedUsername);
+    setUsername(savedUsernameFromStorage);
+    setSavedUsername(savedUsernameFromStorage); // Устанавливаем сохраненное имя
     
     // Применяем тему к body
     document.body.setAttribute("data-theme", savedTheme);
@@ -137,6 +139,7 @@ const Application = () => {
     }
 
     localStorage.setItem("devtools-username", username);
+    setSavedUsername(username); // Обновляем сохраненное имя для отображения
     loadStorageData();
     
     toast({
@@ -338,10 +341,10 @@ const Application = () => {
               </div>
 
               {/* Current User Display */}
-              {username && (
+              {savedUsername && (
                 <div className="p-3 rounded-lg bg-gradient-accent/20 border border-accent/30">
                   <p className="text-sm">
-                    <strong>👋 Привет, {username}!</strong><br/>
+                    <strong>👋 Привет, {savedUsername}!</strong><br/>
                     <span className="text-muted-foreground">
                       Тема: {theme === "dark" ? "Тёмная" : "Светлая"} | 
                       Язык: {language === "ru" ? "Русский" : "English"}

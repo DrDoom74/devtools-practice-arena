@@ -8,7 +8,7 @@ import { useToast } from "@/hooks/use-toast";
 const Network = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [requestHistory, setRequestHistory] = useState<any[]>([]);
-  const [throttling, setThrottling] = useState("none");
+  const [userAgent, setUserAgent] = useState<string>("");
   const { toast } = useToast();
 
   const makeApiRequest = async (url: string, method: string = 'GET') => {
@@ -106,6 +106,53 @@ const Network = () => {
     });
   };
 
+  const testUserAgent = async () => {
+    setIsLoading(true);
+    const startTime = Date.now();
+    
+    try {
+      const response = await fetch('https://httpbin.org/user-agent', {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Requested-With': 'DevToolsTrainer'
+        }
+      });
+      
+      const data = await response.json();
+      const endTime = Date.now();
+      const duration = endTime - startTime;
+      
+      setUserAgent(data['user-agent'] || 'Unknown');
+      
+      const requestData = {
+        url: 'https://httpbin.org/user-agent',
+        method: 'GET',
+        status: response.status,
+        statusText: response.statusText,
+        duration,
+        timestamp: new Date().toLocaleTimeString(),
+        userAgentResponse: data['user-agent']
+      };
+      
+      setRequestHistory(prev => [requestData, ...prev.slice(0, 9)]);
+      
+      toast({
+        title: "User Agent получен",
+        description: `Ваш User Agent: ${data['user-agent']?.substring(0, 50)}...`,
+      });
+      
+    } catch (error) {
+      toast({
+        title: "Ошибка получения User Agent",
+        description: error.message,
+        variant: "destructive"
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-background">
       <Navigation />
@@ -141,7 +188,7 @@ const Network = () => {
               <div className="space-y-3">
                 <h4 className="font-semibold text-devtools-orange">⚡ Полезные действия:</h4>
                 <ul className="text-sm space-y-1 text-muted-foreground">
-                  <li>• ПКМ → Replay XHR для повтора запроса</li>
+                  
                   <li>• ПКМ → Copy as cURL для использования в терминале</li>
                   <li>• ПКМ → Copy as fetch для JavaScript кода</li>
                   <li>• ПКМ → Block request URL для блокировки</li>
@@ -160,24 +207,6 @@ const Network = () => {
               <CardDescription>Создавайте различные типы HTTP запросов для анализа</CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
-              {/* Throttling Control */}
-              <div className="space-y-2">
-                <label className="text-sm font-medium">Симуляция скорости соединения:</label>
-                <Select value={throttling} onValueChange={setThrottling}>
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="none">Без ограничений</SelectItem>
-                    <SelectItem value="slow-3g">Slow 3G</SelectItem>
-                    <SelectItem value="fast-3g">Fast 3G</SelectItem>
-                    <SelectItem value="offline">Offline</SelectItem>
-                  </SelectContent>
-                </Select>
-                <p className="text-xs text-muted-foreground">
-                  Настройте throttling в DevTools Network для полного эффекта
-                </p>
-              </div>
 
               {/* Request Buttons */}
               <div className="space-y-3">
@@ -300,6 +329,50 @@ const Network = () => {
             </CardContent>
           </Card>
         </div>
+
+        {/* User Agent Testing */}
+        <Card className="mt-8 bg-gradient-card shadow-card">
+          <CardHeader>
+            <CardTitle className="text-devtools-purple">🔍 Тестирование User Agent</CardTitle>
+            <CardDescription>Изучите как изменить и протестировать User Agent</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            <div className="grid md:grid-cols-2 gap-6">
+              <div className="space-y-3">
+                <h4 className="font-semibold text-devtools-blue">📖 Как изменить User Agent:</h4>
+                <ul className="text-sm space-y-2 text-muted-foreground">
+                  <li>1. Откройте DevTools (F12)</li>
+                  <li>2. Перейдите на вкладку Network</li>
+                  <li>3. Нажмите на иконку настроек (⚙️) или Network conditions</li>
+                  <li>4. Снимите галочку "Use browser default"</li>
+                  <li>5. Выберите другой User Agent из списка</li>
+                  <li>6. Или введите свой кастомный User Agent</li>
+                </ul>
+              </div>
+              <div className="space-y-3">
+                <h4 className="font-semibold text-devtools-green">🧪 Тестирование:</h4>
+                <Button 
+                  onClick={testUserAgent}
+                  disabled={isLoading}
+                  className="w-full"
+                >
+                  {isLoading ? "Получение..." : "Получить текущий User Agent"}
+                </Button>
+                {userAgent && (
+                  <div className="p-3 rounded-lg border border-primary/20 bg-primary/5">
+                    <p className="text-sm font-medium mb-1">Ваш User Agent:</p>
+                    <p className="text-xs font-mono text-muted-foreground break-all">
+                      {userAgent}
+                    </p>
+                  </div>
+                )}
+                <div className="text-xs text-muted-foreground">
+                  💡 Измените User Agent в DevTools и нажмите кнопку снова для проверки
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
 
         {/* Advanced Features */}
         <Card className="mt-8 bg-gradient-card shadow-card">

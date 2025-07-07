@@ -4,7 +4,6 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Calendar } from "lucide-react";
 
 const Elements = () => {
   const [hoverable, setHoverable] = useState(false);
@@ -106,12 +105,6 @@ const Elements = () => {
                     type="date" 
                     className="flex-1 p-2 rounded-md border border-border bg-input text-foreground text-sm md:text-base"
                     defaultValue="2024-01-15"
-                  />
-                  {/* Decorative calendar icon for search practice */}
-                  <Calendar 
-                    id="calendar-icon"
-                    data-element="calendar"
-                    className="calendar-selector-practice w-6 h-6 text-primary hover:text-accent transition-smooth"
                   />
                 </div>
               </div>

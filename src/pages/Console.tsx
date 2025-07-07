@@ -1,128 +1,226 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import Navigation from "@/components/Navigation";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
+import { Progress } from "@/components/ui/progress";
+import { Timer, Play, Square, RotateCcw, Clock } from "lucide-react";
 
 const Console = () => {
-  const [jsCode, setJsCode] = useState("");
-  const [output, setOutput] = useState<string[]>([]);
-  const [selectedElement, setSelectedElement] = useState<string>("");
+  // Timer and Async Testing State
+  const [logs, setLogs] = useState<string[]>([]);
+  const [activeTimers, setActiveTimers] = useState<Set<NodeJS.Timeout>>(new Set());
+  const [activeIntervals, setActiveIntervals] = useState<Set<NodeJS.Timeout>>(new Set());
+  const [promiseStates, setPromiseStates] = useState<{[key: string]: 'pending' | 'resolved' | 'rejected'}>({});
+  const [timerProgress, setTimerProgress] = useState<{[key: string]: number}>({});
+  const [customDelay, setCustomDelay] = useState<number>(2);
+  const intervalRef = useRef<NodeJS.Timeout | null>(null);
+  const [intervalCount, setIntervalCount] = useState<number>(0);
+  const [isIntervalActive, setIsIntervalActive] = useState<boolean>(false);
 
-  const executeCode = () => {
-    // Проверка длины кода
-    if (jsCode.length > 500) {
-      setOutput(prev => [...prev, `> ${jsCode.substring(0, 50)}...`, `❌ Ошибка: Код превышает лимит в 500 символов`]);
-      return;
+  const addLog = (message: string, type: 'info' | 'success' | 'error' | 'warning' = 'info') => {
+    const timestamp = new Date().toLocaleTimeString();
+    const emoji = type === 'success' ? '✅' : type === 'error' ? '❌' : type === 'warning' ? '⚠️' : '📝';
+    setLogs(prev => [...prev, `[${timestamp}] ${emoji} ${message}`]);
+    
+    // Also log to browser console
+    console.log(`Timer Test: ${message}`);
+  };
+
+  const clearLogs = () => {
+    setLogs([]);
+    console.clear();
+  };
+
+  const clearAllTimers = () => {
+    // Clear all active timers
+    activeTimers.forEach(timer => clearTimeout(timer));
+    activeIntervals.forEach(interval => clearInterval(interval));
+    if (intervalRef.current) {
+      clearInterval(intervalRef.current);
+      intervalRef.current = null;
     }
+    
+    setActiveTimers(new Set());
+    setActiveIntervals(new Set());
+    setPromiseStates({});
+    setTimerProgress({});
+    setIsIntervalActive(false);
+    setIntervalCount(0);
+    
+    addLog("Все таймеры и интервалы очищены", 'warning');
+  };
 
-    // Проверка на опасные функции
-    const dangerousPatterns = [
-      /window\.location/i,
-      /localStorage/i,
-      /sessionStorage/i,
-      /document\.write/i,
-      /document\.writeln/i,
-      /\beval\s*\(/i,
-      /new\s+Function/i,
-      /XMLHttpRequest/i,
-      /\bfetch\s*\(/i,
-      /setTimeout/i,
-      /setInterval/i,
-      /document\.cookie/i,
-      /window\.open/i,
-      /history\./i,
-      /navigator\./i,
-      /location\./i
+  // setTimeout Testing
+  const testSetTimeout = (delay: number) => {
+    const startTime = Date.now();
+    const timerKey = `timeout-${Date.now()}`;
+    
+    addLog(`Запущен setTimeout на ${delay} сек`);
+    console.time(`setTimeout-${delay}s`);
+    
+    // Progress tracking
+    const progressInterval = setInterval(() => {
+      const elapsed = Date.now() - startTime;
+      const progress = Math.min((elapsed / (delay * 1000)) * 100, 100);
+      setTimerProgress(prev => ({ ...prev, [timerKey]: progress }));
+    }, 100);
+
+    const timer = setTimeout(() => {
+      console.timeEnd(`setTimeout-${delay}s`);
+      addLog(`setTimeout завершен через ${delay} сек`, 'success');
+      clearInterval(progressInterval);
+      setTimerProgress(prev => {
+        const newProgress = { ...prev };
+        delete newProgress[timerKey];
+        return newProgress;
+      });
+      setActiveTimers(prev => {
+        const newSet = new Set(prev);
+        newSet.delete(timer);
+        return newSet;
+      });
+    }, delay * 1000);
+
+    setActiveTimers(prev => new Set(prev).add(timer));
+  };
+
+  // setInterval Testing
+  const startInterval = () => {
+    if (isIntervalActive) return;
+    
+    setIsIntervalActive(true);
+    setIntervalCount(0);
+    addLog("Запущен setInterval (каждую секунду)");
+    
+    const interval = setInterval(() => {
+      setIntervalCount(prev => {
+        const newCount = prev + 1;
+        console.log(`Интервал тик #${newCount}`);
+        addLog(`Интервал тик #${newCount}`, 'info');
+        return newCount;
+      });
+    }, 1000);
+    
+    intervalRef.current = interval;
+    setActiveIntervals(prev => new Set(prev).add(interval));
+  };
+
+  const stopInterval = () => {
+    if (intervalRef.current) {
+      clearInterval(intervalRef.current);
+      intervalRef.current = null;
+      setIsIntervalActive(false);
+      addLog(`Интервал остановлен. Всего тиков: ${intervalCount}`, 'warning');
+      setActiveIntervals(prev => {
+        const newSet = new Set(prev);
+        if (intervalRef.current) newSet.delete(intervalRef.current);
+        return newSet;
+      });
+    }
+  };
+
+  // Promise Testing
+  const testPromiseSuccess = () => {
+    const promiseKey = 'promise-success';
+    setPromiseStates(prev => ({ ...prev, [promiseKey]: 'pending' }));
+    addLog("Запущен Promise (успех через 3 сек)");
+    
+    console.time('Promise-Success');
+    const promise = new Promise((resolve) => {
+      setTimeout(() => {
+        resolve('Успешный результат!');
+      }, 3000);
+    });
+
+    promise.then((result) => {
+      console.timeEnd('Promise-Success');
+      addLog(`Promise resolved: ${result}`, 'success');
+      setPromiseStates(prev => ({ ...prev, [promiseKey]: 'resolved' }));
+    });
+  };
+
+  const testPromiseError = () => {
+    const promiseKey = 'promise-error';
+    setPromiseStates(prev => ({ ...prev, [promiseKey]: 'pending' }));
+    addLog("Запущен Promise (ошибка через 2 сек)");
+    
+    console.time('Promise-Error');
+    const promise = new Promise((_, reject) => {
+      setTimeout(() => {
+        reject(new Error('Тестовая ошибка Promise'));
+      }, 2000);
+    });
+
+    promise.catch((error) => {
+      console.timeEnd('Promise-Error');
+      addLog(`Promise rejected: ${error.message}`, 'error');
+      setPromiseStates(prev => ({ ...prev, [promiseKey]: 'rejected' }));
+    });
+  };
+
+  const testPromiseAll = () => {
+    const promiseKey = 'promise-all';
+    setPromiseStates(prev => ({ ...prev, [promiseKey]: 'pending' }));
+    addLog("Запущен Promise.all (3 промиса)");
+    
+    console.time('Promise-All');
+    const promises = [
+      new Promise(resolve => setTimeout(() => resolve('Результат 1'), 1000)),
+      new Promise(resolve => setTimeout(() => resolve('Результат 2'), 2000)),
+      new Promise(resolve => setTimeout(() => resolve('Результат 3'), 1500))
     ];
 
-    const foundDangerous = dangerousPatterns.find(pattern => pattern.test(jsCode));
-    if (foundDangerous) {
-      setOutput(prev => [...prev, 
-        `> ${jsCode}`, 
-        `⚠️ Предупреждение: Обнаружена потенциально опасная операция`,
-        `🔒 Песочница ограничивает доступ к: window.location, localStorage, document.write, eval, fetch и другим системным API`
-      ]);
-      return;
-    }
+    Promise.all(promises).then((results) => {
+      console.timeEnd('Promise-All');
+      addLog(`Promise.all completed: [${results.join(', ')}]`, 'success');
+      setPromiseStates(prev => ({ ...prev, [promiseKey]: 'resolved' }));
+    });
+  };
 
+  // Async/Await Testing
+  const testAsyncAwait = async () => {
+    addLog("Запущена async функция");
+    console.time('Async-Await');
+    
     try {
-      // Создаем безопасную среду выполнения с таймаутом
-      const timeoutPromise = new Promise((_, reject) => {
-        setTimeout(() => reject(new Error('Превышено время выполнения (3 сек)')), 3000);
+      const result = await new Promise((resolve) => {
+        setTimeout(() => resolve('Async результат'), 2500);
       });
-
-      const executionPromise = new Promise((resolve, reject) => {
-        try {
-          // Создаем ограниченную среду
-          const safeGlobals = {
-            Math: Math,
-            Date: Date,
-            JSON: JSON,
-            parseInt: parseInt,
-            parseFloat: parseFloat,
-            isNaN: isNaN,
-            isFinite: isFinite,
-            String: String,
-            Number: Number,
-            Boolean: Boolean,
-            Array: Array,
-            Object: Object
-          };
-
-          const result = new Function(`
-            // Безопасные функции консоли
-            const log = (msg) => ({ type: 'log', message: String(msg) });
-            const error = (msg) => ({ type: 'error', message: String(msg) });
-            const warn = (msg) => ({ type: 'warn', message: String(msg) });
-            
-            // Безопасные DOM функции
-            const querySelector = (selector) => document.querySelector(selector);
-            const querySelectorAll = (selector) => Array.from(document.querySelectorAll(selector));
-            const getElementById = (id) => document.getElementById(id);
-            
-            // Симуляция DevTools переменных
-            const $0 = document.querySelector('#console-demo-element');
-            const $1 = document.querySelector('.console-card');
-            
-            // Доступные глобальные объекты
-            const { Math, Date, JSON, parseInt, parseFloat, isNaN, isFinite, String, Number, Boolean, Array, Object } = arguments[0];
-            
-            const result = (function() {
-              ${jsCode}
-            })();
-            
-            return result !== undefined ? String(result) : 'undefined';
-          `)(safeGlobals);
-          
-          resolve(result);
-        } catch (err) {
-          reject(err);
-        }
-      });
-
-      Promise.race([executionPromise, timeoutPromise])
-        .then(result => {
-          setOutput(prev => [...prev, `> ${jsCode}`, `< ${result}`]);
-        })
-        .catch(error => {
-          setOutput(prev => [...prev, `> ${jsCode}`, `❌ Error: ${error.message}`]);
-        });
-        
+      
+      console.timeEnd('Async-Await');
+      addLog(`Async/await completed: ${result}`, 'success');
     } catch (error) {
-      setOutput(prev => [...prev, `> ${jsCode}`, `❌ Error: ${error.message}`]);
+      addLog(`Async/await error: ${error.message}`, 'error');
     }
-    setJsCode("");
+  };
+
+  // Race Condition Test
+  const testRaceCondition = () => {
+    addLog("Тест гонки условий: 3 операции одновременно");
+    
+    // Быстрая операция
+    setTimeout(() => {
+      addLog("🥇 Быстрая операция (1 сек) - ФИНИШ!", 'success');
+    }, 1000);
+    
+    // Средняя операция
+    setTimeout(() => {
+      addLog("🥈 Средняя операция (2 сек) - финиш", 'success');
+    }, 2000);
+    
+    // Медленная операция
+    setTimeout(() => {
+      addLog("🥉 Медленная операция (3 сек) - финиш", 'success');
+    }, 3000);
   };
 
   const generateError = () => {
     try {
-      // Специально создаем ошибку для демонстрации
       throw new Error("Демонстрационная ошибка для DevTools Console");
     } catch (error) {
       console.error("🚨 Ошибка для тестирования:", error);
-      setOutput(prev => [...prev, "🚨 Ошибка отправлена в DevTools Console"]);
+      addLog("🚨 Ошибка отправлена в DevTools Console", 'error');
     }
   };
 
@@ -130,30 +228,24 @@ const Console = () => {
     try {
       const element = document.querySelector(selector);
       if (element) {
-        setSelectedElement(selector);
         console.log("Selected element:", element);
-        setOutput(prev => [...prev, `Элемент выбран: ${selector}`, `Проверьте DevTools Console`]);
+        addLog(`Элемент выбран: ${selector}`, 'success');
+        addLog("Проверьте DevTools Console", 'info');
       }
     } catch (error) {
-      setOutput(prev => [...prev, `Ошибка выбора: ${error.message}`]);
+      addLog(`Ошибка выбора: ${error.message}`, 'error');
     }
-  };
-
-  const clearOutput = () => {
-    setOutput([]);
-    console.clear();
   };
 
   const monitorElement = () => {
     const element = document.querySelector('#console-demo-element');
     if (element) {
-      // Добавляем мониторинг событий
       ['click', 'mouseover', 'mouseout'].forEach(eventType => {
         element.addEventListener(eventType, (e) => {
           console.log(`Event monitored: ${eventType} on`, e.target);
         });
       });
-      setOutput(prev => [...prev, "События мониторятся. Проверьте DevTools Console"]);
+      addLog("События мониторятся. Проверьте DevTools Console", 'info');
     }
   };
 
@@ -165,46 +257,46 @@ const Console = () => {
         {/* Header */}
         <div className="text-center mb-12">
           <h1 className="text-4xl font-bold mb-4 bg-gradient-primary bg-clip-text text-transparent">
-            💬 Console - Выполнение JavaScript
+            ⏱️ Console - Тестирование таймеров и асинхронного кода
           </h1>
           <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
-            Выполняйте JavaScript код, работайте с DOM, изучайте объекты и отлаживайте приложения
+            Изучайте поведение setTimeout, setInterval, Promise и async/await кода с помощью практических тестов
           </p>
         </div>
 
         {/* Instructions */}
         <Card className="mb-8 bg-gradient-card border-devtools-blue/20">
           <CardHeader>
-            <CardTitle className="text-devtools-blue">📋 Популярные команды Console</CardTitle>
+            <CardTitle className="text-devtools-blue">📋 Тестирование асинхронных операций</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="grid md:grid-cols-2 gap-6">
               <div className="space-y-3">
                 <div className="bg-muted/50 p-3 rounded-lg font-mono text-sm">
-                  <div className="text-devtools-green">document.querySelector('.class')</div>
-                  <div className="text-muted-foreground">Выбор элемента по селектору</div>
+                  <div className="text-devtools-green">setTimeout(callback, delay)</div>
+                  <div className="text-muted-foreground">Выполнение через указанное время</div>
                 </div>
                 <div className="bg-muted/50 p-3 rounded-lg font-mono text-sm">
-                  <div className="text-devtools-green">$0, $1, $2</div>
-                  <div className="text-muted-foreground">Последние выбранные элементы</div>
+                  <div className="text-devtools-green">setInterval(callback, delay)</div>
+                  <div className="text-muted-foreground">Повторное выполнение через интервалы</div>
                 </div>
                 <div className="bg-muted/50 p-3 rounded-lg font-mono text-sm">
-                  <div className="text-devtools-green">console.log(), console.error()</div>
-                  <div className="text-muted-foreground">Вывод информации в консоль</div>
+                  <div className="text-devtools-green">Promise.resolve/reject</div>
+                  <div className="text-muted-foreground">Асинхронные промисы</div>
                 </div>
               </div>
               <div className="space-y-3">
                 <div className="bg-muted/50 p-3 rounded-lg font-mono text-sm">
-                  <div className="text-devtools-orange">monitorEvents($0, 'click')</div>
-                  <div className="text-muted-foreground">Мониторинг событий элемента</div>
+                  <div className="text-devtools-orange">async/await</div>
+                  <div className="text-muted-foreground">Современный асинхронный синтаксис</div>
                 </div>
                 <div className="bg-muted/50 p-3 rounded-lg font-mono text-sm">
-                  <div className="text-devtools-orange">copy()</div>
-                  <div className="text-muted-foreground">Копирование объекта в буфер</div>
+                  <div className="text-devtools-orange">Promise.all()</div>
+                  <div className="text-muted-foreground">Параллельное выполнение промисов</div>
                 </div>
                 <div className="bg-muted/50 p-3 rounded-lg font-mono text-sm">
-                  <div className="text-devtools-orange">clear()</div>
-                  <div className="text-muted-foreground">Очистка консоли</div>
+                  <div className="text-devtools-orange">console.time/timeEnd</div>
+                  <div className="text-muted-foreground">Измерение времени выполнения</div>
                 </div>
               </div>
             </div>
@@ -212,43 +304,157 @@ const Console = () => {
         </Card>
 
         <div className="grid lg:grid-cols-2 gap-8">
-          {/* JavaScript Executor */}
+          {/* Timer and Async Testing */}
           <Card className="bg-gradient-card shadow-card">
             <CardHeader>
-              <CardTitle className="text-devtools-purple">⚡ JavaScript Песочница</CardTitle>
-              <CardDescription>Выполните JavaScript код и посмотрите результат</CardDescription>
+              <CardTitle className="text-devtools-purple flex items-center gap-2">
+                <Timer className="w-5 h-5" />
+                ⏱️ Тестирование таймеров и асинхронного кода
+              </CardTitle>
+              <CardDescription>Практические тесты для изучения асинхронных операций</CardDescription>
             </CardHeader>
-            <CardContent className="space-y-4">
-              <Textarea
-                value={jsCode}
-                onChange={(e) => setJsCode(e.target.value)}
-                placeholder="Введите JavaScript код..."
-                className="font-mono min-h-[120px]"
-                rows={5}
-              />
+            <CardContent className="space-y-6">
               
-              <div className="flex gap-2">
-                <Button onClick={executeCode} className="flex-1">
-                  Выполнить код
-                </Button>
-                <Button onClick={clearOutput} variant="outline">
-                  Очистить
-                </Button>
+              {/* setTimeout Tests */}
+              <div className="space-y-3">
+                <h4 className="font-semibold text-devtools-green flex items-center gap-2">
+                  <Clock className="w-4 h-4" />
+                  setTimeout Tests
+                </h4>
+                <div className="flex gap-2 flex-wrap">
+                  <Button onClick={() => testSetTimeout(2)} variant="outline" size="sm">
+                    Таймер 2 сек
+                  </Button>
+                  <Button onClick={() => testSetTimeout(5)} variant="outline" size="sm">
+                    Таймер 5 сек
+                  </Button>
+                  <div className="flex items-center gap-2">
+                    <Input
+                      type="number"
+                      value={customDelay}
+                      onChange={(e) => setCustomDelay(Number(e.target.value))}
+                      className="w-20"
+                      min="1"
+                      max="10"
+                    />
+                    <Button onClick={() => testSetTimeout(customDelay)} variant="outline" size="sm">
+                      Кастомный
+                    </Button>
+                  </div>
+                </div>
+                
+                {/* Progress indicators */}
+                {Object.entries(timerProgress).map(([key, progress]) => (
+                  <div key={key} className="space-y-1">
+                    <div className="text-xs text-muted-foreground">Прогресс таймера</div>
+                    <Progress value={progress} className="h-2" />
+                  </div>
+                ))}
               </div>
 
-              {/* Output */}
+              {/* setInterval Tests */}
+              <div className="space-y-3">
+                <h4 className="font-semibold text-devtools-blue flex items-center gap-2">
+                  <Play className="w-4 h-4" />
+                  setInterval Tests
+                </h4>
+                <div className="flex gap-2 items-center">
+                  <Button 
+                    onClick={startInterval} 
+                    variant="outline" 
+                    size="sm"
+                    disabled={isIntervalActive}
+                  >
+                    Старт интервала
+                  </Button>
+                  <Button 
+                    onClick={stopInterval} 
+                    variant="outline" 
+                    size="sm"
+                    disabled={!isIntervalActive}
+                  >
+                    Стоп интервала
+                  </Button>
+                  <div className="text-sm text-muted-foreground">
+                    Тиков: {intervalCount} | Статус: {isIntervalActive ? '🟢 Активен' : '🔴 Остановлен'}
+                  </div>
+                </div>
+              </div>
+
+              {/* Promise Tests */}
+              <div className="space-y-3">
+                <h4 className="font-semibold text-devtools-orange">Promise Tests</h4>
+                <div className="flex gap-2 flex-wrap">
+                  <Button onClick={testPromiseSuccess} variant="outline" size="sm">
+                    Promise успех
+                  </Button>
+                  <Button onClick={testPromiseError} variant="outline" size="sm">
+                    Promise ошибка
+                  </Button>
+                  <Button onClick={testPromiseAll} variant="outline" size="sm">
+                    Promise.all
+                  </Button>
+                </div>
+                
+                {/* Promise states */}
+                <div className="space-y-1">
+                  {Object.entries(promiseStates).map(([key, state]) => (
+                    <div key={key} className="text-sm flex items-center gap-2">
+                      <span className="font-mono">{key}:</span>
+                      <span className={
+                        state === 'pending' ? 'text-yellow-500' :
+                        state === 'resolved' ? 'text-green-500' :
+                        'text-red-500'
+                      }>
+                        {state === 'pending' ? '🟡 Pending' : 
+                         state === 'resolved' ? '✅ Resolved' : '❌ Rejected'}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Async/Await and Advanced Tests */}
+              <div className="space-y-3">
+                <h4 className="font-semibold text-devtools-purple">Продвинутые тесты</h4>
+                <div className="flex gap-2 flex-wrap">
+                  <Button onClick={testAsyncAwait} variant="outline" size="sm">
+                    Async/Await
+                  </Button>
+                  <Button onClick={testRaceCondition} variant="outline" size="sm">
+                    Гонка условий
+                  </Button>
+                </div>
+              </div>
+
+              {/* Control buttons */}
+              <div className="flex gap-2 pt-4 border-t">
+                <Button onClick={clearAllTimers} variant="destructive" size="sm">
+                  <Square className="w-4 h-4 mr-1" />
+                  Очистить все таймеры
+                </Button>
+                <Button onClick={clearLogs} variant="outline" size="sm">
+                  <RotateCcw className="w-4 h-4 mr-1" />
+                  Очистить логи
+                </Button>
+                <div className="text-xs text-muted-foreground flex items-center">
+                  Активных операций: {activeTimers.size + activeIntervals.size}
+                </div>
+              </div>
+
+              {/* Logs */}
               <div className="bg-muted/30 rounded-lg p-4 min-h-[200px] font-mono text-sm">
-                <div className="text-devtools-green mb-2">Результат выполнения:</div>
-                {output.length === 0 ? (
-                  <div className="text-muted-foreground">Результаты выполнения появятся здесь...</div>
+                <div className="text-devtools-green mb-2">Логи тестирования:</div>
+                {logs.length === 0 ? (
+                  <div className="text-muted-foreground">Логи операций появятся здесь...</div>
                 ) : (
-                  <div className="space-y-1">
-                    {output.map((line, index) => (
+                  <div className="space-y-1 max-h-[150px] overflow-y-auto">
+                    {logs.slice(-10).map((line, index) => (
                       <div key={index} className={
-                        line.startsWith('>') ? 'text-foreground' :
-                        line.startsWith('❌') ? 'text-destructive' :
-                        line.startsWith('🚨') ? 'text-devtools-orange' :
-                        'text-devtools-blue'
+                        line.includes('✅') ? 'text-green-400' :
+                        line.includes('❌') ? 'text-red-400' :
+                        line.includes('⚠️') ? 'text-yellow-400' :
+                        'text-foreground'
                       }>
                         {line}
                       </div>
@@ -314,7 +520,7 @@ const Console = () => {
                       { name: 'Console', shortcut: 'Ctrl+Shift+J' },
                       { name: 'Network', shortcut: 'Ctrl+Shift+E' }
                     ]);
-                    setOutput(prev => [...prev, "Таблица отправлена в DevTools Console"]);
+                    addLog("Таблица отправлена в DevTools Console", 'info');
                   }}
                   variant="outline" 
                   className="w-full"

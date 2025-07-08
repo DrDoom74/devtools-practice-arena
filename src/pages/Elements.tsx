@@ -100,13 +100,6 @@ const Elements = () => {
                   </SelectContent>
                 </Select>
 
-                <div className="flex items-center gap-2">
-                  <input 
-                    type="date" 
-                    className="flex-1 p-2 rounded-md border border-border bg-input text-foreground text-sm md:text-base"
-                    defaultValue="2024-01-15"
-                  />
-                </div>
               </div>
             </CardContent>
           </Card>

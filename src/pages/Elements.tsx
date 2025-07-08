@@ -34,7 +34,7 @@ const Elements = () => {
               <div className="space-y-2">
                 <h3 className="font-semibold text-devtools-green">🎯 Что попробовать:</h3>
                 <ul className="text-sm space-y-1 text-muted-foreground">
-                  <li>• Кликните ПКМ → Inspect Element на любом элементе</li>
+                  <li>• Кликните ПКМ → Просмотреть код на любом элементе</li>
                   <li>• Измените текст через Edit as HTML</li>
                   <li>• Примените :hover состояние в Styles</li>
                   <li>• Добавьте новый CSS класс</li>

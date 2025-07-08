@@ -246,7 +246,7 @@ const Application = () => {
                   <li>• <strong>sessionStorage:</strong> Данные сессии</li>
                   <li>• <strong>Cookies:</strong> HTTP куки</li>
                   <li>• <strong>IndexedDB:</strong> Браузерная база данных</li>
-                  <li>• <strong>Cache Storage:</strong> Cache Storage — кеш ресурсов, управляемый Service Worker.</li>
+                  <li>• <strong>Cache Storage:</strong> кеш ресурсов, управляемый Service Worker.</li>
                 </ul>
               </div>
               <div className="space-y-3">

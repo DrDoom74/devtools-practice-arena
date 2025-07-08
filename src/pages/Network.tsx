@@ -35,14 +35,19 @@ const Network = () => {
         duration,
         timestamp: new Date().toLocaleTimeString(),
         headers: Object.fromEntries(response.headers.entries()),
-        size: response.headers.get('content-length') || 'unknown'
+        size: response.headers.get('content-length') || 'unknown',
+        isHttpError: response.status >= 400
       };
       
       setRequestHistory(prev => [requestData, ...prev.slice(0, 9)]);
       
+      const toastVariant = response.status >= 400 ? "destructive" : "default";
+      const toastTitle = response.status >= 400 ? "HTTP ошибка" : "Запрос выполнен";
+      
       toast({
-        title: "Запрос выполнен",
+        title: toastTitle,
         description: `${method} ${url} - ${response.status} (${duration}ms)`,
+        variant: toastVariant
       });
       
     } catch (error) {
@@ -53,13 +58,14 @@ const Network = () => {
         statusText: 'Network Error',
         duration: Date.now() - startTime,
         timestamp: new Date().toLocaleTimeString(),
-        error: error.message
+        error: error.message,
+        isNetworkError: true
       };
       
       setRequestHistory(prev => [requestData, ...prev.slice(0, 9)]);
       
       toast({
-        title: "Ошибка запроса",
+        title: "Сетевая ошибка",
         description: error.message,
         variant: "destructive"
       });
@@ -95,7 +101,15 @@ const Network = () => {
   };
 
   const makeFailedRequest = async () => {
-    await makeApiRequest('https://httpstat.us/404', 'GET');
+    await makeApiRequest('https://jsonplaceholder.typicode.com/posts/999', 'GET');
+  };
+
+  const makeServerErrorRequest = async () => {
+    await makeApiRequest('https://httpbin.org/status/500', 'GET');
+  };
+
+  const makeForbiddenRequest = async () => {
+    await makeApiRequest('https://httpbin.org/status/403', 'GET');
   };
 
   const clearHistory = () => {
@@ -243,6 +257,24 @@ const Network = () => {
                   className="w-full text-devtools-orange border-devtools-orange/30 hover:bg-devtools-orange/10"
                 >
                   Медленный запрос (3s)
+                </Button>
+
+                <Button 
+                  onClick={makeServerErrorRequest}
+                  disabled={isLoading}
+                  variant="outline"
+                  className="w-full text-devtools-red border-devtools-red/30 hover:bg-devtools-red/10"
+                >
+                  Запрос с ошибкой (500)
+                </Button>
+
+                <Button 
+                  onClick={makeForbiddenRequest}
+                  disabled={isLoading}
+                  variant="outline"
+                  className="w-full text-devtools-red border-devtools-red/30 hover:bg-devtools-red/10"
+                >
+                  Запрос с ошибкой (403)
                 </Button>
 
                 <Button 

@@ -414,21 +414,24 @@ const Network = () => {
           <CardContent>
             <div className="grid md:grid-cols-3 gap-6">
               <div className="space-y-2">
-                <h4 className="font-semibold text-devtools-blue">Request Blocking</h4>
+                <h4 className="font-semibold text-devtools-blue">Block request URL</h4>
                 <p className="text-sm text-muted-foreground">
-                  Блокируйте запросы по URL или домену для тестирования отказоустойчивости
+                  Block request URL — блокируйте загрузку ресурсов по URL для проверки поведения при отсутствии API, скриптов, шрифтов и других внешних ресурсов.<br/>
+                  ➤ Используется при тестировании отказоустойчивости фронтенда (например, как ведёт себя UI без ответа от сервера).
                 </p>
               </div>
               <div className="space-y-2">
-                <h4 className="font-semibold text-devtools-green">Performance Analysis</h4>
+                <h4 className="font-semibold text-devtools-green">Timing Analysis</h4>
                 <p className="text-sm text-muted-foreground">
-                  Анализируйте Timing вкладку для оптимизации скорости загрузки
+                  Используйте вкладку Timing внутри каждого запроса на вкладке Network для анализа задержек (waiting, blocking, DNS lookup и др.).<br/>
+                  ➤ А для полной картины производительности страницы используйте вкладку Performance.
                 </p>
               </div>
               <div className="space-y-2">
                 <h4 className="font-semibold text-devtools-purple">Response Override</h4>
                 <p className="text-sm text-muted-foreground">
-                  Перехватывайте и изменяйте ответы сервера для тестирования edge cases
+                  Response Override (через Overrides) позволяет заменить ответ сервера локальным содержимым — например, имитировать ошибку API, отсутствие данных или специфический кейс.<br/>
+                  ➤ Используется для ручного тестирования edge-сценариев и UI-обработки нестандартных ответов.
                 </p>
               </div>
             </div>

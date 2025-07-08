@@ -20,7 +20,7 @@ const Elements = () => {
             🔍 Elements - Инспекция DOM
           </h1>
           <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
-            Изучите структуру HTML, редактируйте DOM в реальном времени, применяйте псевдосостояния и экспериментируйте с CSS
+            Изучите структуру HTML, редактируйте DOM в реальном времени, применяйте псевдосостояния и экспериментируйте с поиском элементов
           </p>
         </div>
 
@@ -44,11 +44,11 @@ const Elements = () => {
               <div className="space-y-2">
                 <h3 className="font-semibold text-devtools-orange">⚙️ Полезные функции:</h3>
                 <ul className="text-sm space-y-1 text-muted-foreground">
-                  <li>• Force State (:hover, :focus, :active)</li>
-                  <li>• Edit as HTML / Edit Text</li>
-                  <li>• Copy element / Copy selector</li>
-                  <li>• Hide element / Delete element</li>
-                  <li>• Computed styles просмотр</li>
+                  <li>• Force State (:hover, :focus, :active) - применить состояние к элементу</li>
+                  <li>• Edit as HTML - редактировать HTML</li>
+                  <li>• Copy element / Copy selector - скопировать HTML или селектор</li>
+                  <li>• Hide element / Delete element - скрыть или удалить элемент</li>
+                  <li>• Computed styles просмотр - посмотреть итоговые стили</li>
                 </ul>
               </div>
             </div>

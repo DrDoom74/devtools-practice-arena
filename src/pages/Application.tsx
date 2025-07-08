@@ -246,7 +246,7 @@ const Application = () => {
                   <li>• <strong>sessionStorage:</strong> Данные сессии</li>
                   <li>• <strong>Cookies:</strong> HTTP куки</li>
                   <li>• <strong>IndexedDB:</strong> Браузерная база данных</li>
-                  <li>• <strong>Cache Storage:</strong> Кеш Service Worker</li>
+                  <li>• <strong>Cache Storage:</strong> Cache Storage — кеш ресурсов, управляемый Service Worker.</li>
                 </ul>
               </div>
               <div className="space-y-3">
@@ -256,7 +256,7 @@ const Application = () => {
                   <li>• Редактирование значений двойным кликом</li>
                   <li>• Добавление новых ключей через контекстное меню</li>
                   <li>• Фильтрация по ключам или значениям</li>
-                  <li>• Экспорт/импорт данных хранилища</li>
+                  
                 </ul>
               </div>
             </div>

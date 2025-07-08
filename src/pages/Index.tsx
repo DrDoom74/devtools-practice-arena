@@ -172,6 +172,15 @@ const Index = () => {
             >
               Телеграм канал
             </a>
+            {" "} | {" "}
+            <a 
+              href="https://boosty.to/aklimenko" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="text-primary hover:text-accent transition-colors"
+            >
+              Поддержать на Boosty
+            </a>
           </p>
         </div>
       </div>

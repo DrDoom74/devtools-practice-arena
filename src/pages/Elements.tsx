@@ -120,7 +120,7 @@ const Elements = () => {
             <CardContent className="space-y-3 md:space-y-6 px-3 md:px-6">
               <div className="space-y-2 md:space-y-4">
                 <Button
-                  className={`w-full transition-smooth ${hoverable ? 'shadow-glow' : ''}`}
+                  className={`w-full transition-smooth demo-focus-outline demo-active-scale ${hoverable ? 'shadow-glow' : ''}`}
                   onMouseEnter={() => setHoverable(true)}
                   onMouseLeave={() => setHoverable(false)}
                   variant="outline"
@@ -128,20 +128,20 @@ const Elements = () => {
                   Наведите курсор (или примените :hover в DevTools)
                 </Button>
 
-                <div className="group p-3 md:p-4 rounded-lg border border-border bg-muted/30 hover:bg-accent/20 hover:border-accent transition-smooth cursor-pointer">
-                  <h4 className="font-semibold group-hover:text-accent transition-smooth text-sm md:text-base">
+                <div className="group-demo p-3 md:p-4 rounded-lg border border-border bg-muted/30 transition-smooth cursor-pointer">
+                  <h4 className="group-demo-text font-semibold transition-smooth text-sm md:text-base">
                     Карточка с hover-эффектом
                   </h4>
-                  <p className="text-xs md:text-sm text-muted-foreground group-hover:text-accent-foreground">
+                  <p className="text-xs md:text-sm text-muted-foreground group-demo-text">
                     При наведении меняется фон и цвет текста
                   </p>
                 </div>
 
                 <div className="flex flex-col sm:flex-row gap-2 md:gap-4">
-                  <Button variant="default" className="hover:shadow-glow text-sm md:text-base flex-1">
+                  <Button variant="default" className="demo-focus-primary demo-active-glow hover:shadow-glow text-sm md:text-base flex-1">
                     Primary Button
                   </Button>
-                  <Button variant="destructive" className="hover:shadow-glow text-sm md:text-base flex-1">
+                  <Button variant="destructive" className="demo-focus-destructive demo-active-pulse hover:shadow-glow text-sm md:text-base flex-1">
                     Danger Button
                   </Button>
                 </div>
@@ -151,6 +151,10 @@ const Elements = () => {
                     <strong>💡 Совет:</strong> В DevTools → Elements → Styles найдите 
                     элемент и нажмите :hov, чтобы принудительно применить псевдосостояния.
                   </p>
+                  <div className="mt-3 space-y-1 text-xs text-muted-foreground">
+                    <p><strong>:focus</strong> - кликните Tab для фокуса или примените в DevTools</p>
+                    <p><strong>:active</strong> - удерживайте клик или примените в DevTools</p>
+                  </div>
                 </div>
               </div>
             </CardContent>

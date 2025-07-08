@@ -57,6 +57,11 @@ All colors MUST be HSL.
     
     /* Animation */
     --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    
+    /* Enhanced focus and active states for demo */
+    --focus-ring-primary: 0 0 0 3px hsl(var(--devtools-blue) / 0.3);
+    --focus-ring-destructive: 0 0 0 3px hsl(var(--devtools-red) / 0.3);
+    --focus-ring-outline: 0 0 0 3px hsl(var(--devtools-green) / 0.3);
 
     --sidebar-background: 0 0% 98%;
 
@@ -121,5 +126,53 @@ All colors MUST be HSL.
 
   body {
     @apply bg-background text-foreground;
+  }
+}
+
+@layer components {
+  /* Enhanced focus and active styles for pseudostate demonstrations */
+  .demo-focus-primary:focus {
+    @apply outline-none;
+    box-shadow: var(--focus-ring-primary);
+    border-color: hsl(var(--devtools-blue));
+  }
+  
+  .demo-focus-destructive:focus {
+    @apply outline-none;
+    box-shadow: var(--focus-ring-destructive);
+    border-color: hsl(var(--devtools-red));
+  }
+  
+  .demo-focus-outline:focus {
+    @apply outline-none;
+    box-shadow: var(--focus-ring-outline);
+    border-color: hsl(var(--devtools-green));
+  }
+  
+  .demo-active-scale:active {
+    transform: scale(0.95);
+    transition: transform 0.1s ease-out;
+  }
+  
+  .demo-active-pulse:active {
+    animation: pulse 0.3s ease-out;
+    background-color: hsl(var(--destructive) / 0.9);
+  }
+  
+  .demo-active-glow:active {
+    box-shadow: 0 0 20px hsl(var(--devtools-blue) / 0.5);
+    background-color: hsl(var(--primary) / 0.9);
+  }
+  
+  /* Hover demonstration for the group card */
+  .group-demo:hover .group-demo-text {
+    color: hsl(var(--accent));
+    transition: var(--transition-smooth);
+  }
+  
+  .group-demo:hover {
+    background-color: hsl(var(--accent) / 0.2);
+    border-color: hsl(var(--accent));
+    transition: var(--transition-smooth);
   }
 }

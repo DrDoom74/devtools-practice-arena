@@ -14,6 +14,7 @@ const Application = () => {
   const [usernameError, setUsernameError] = useState("");
   const [isUsernameValid, setIsUsernameValid] = useState(true);
   const [storageData, setStorageData] = useState<{[key: string]: string}>({});
+  const [isClearing, setIsClearing] = useState(false);
   const { toast } = useToast();
 
   // Валидация имени пользователя
@@ -148,20 +149,71 @@ const Application = () => {
     });
   };
 
-  const clearStorage = () => {
-    const keys = Object.keys(storageData);
-    keys.forEach(key => localStorage.removeItem(key));
+  const clearStorage = async () => {
+    setIsClearing(true);
+    const clearedTypes: string[] = [];
     
-    setTheme("dark");
-    setLanguage("ru");
-    setUsername("");
-    document.body.setAttribute("data-theme", "dark");
-    loadStorageData();
-    
-    toast({
-      title: "Хранилище очищено",
-      description: "Все данные localStorage удалены",
-    });
+    try {
+      // Очистка localStorage
+      const keys = Object.keys(storageData);
+      keys.forEach(key => localStorage.removeItem(key));
+      if (keys.length > 0) clearedTypes.push("localStorage");
+      
+      // Очистка sessionStorage
+      if (sessionStorage.length > 0) {
+        sessionStorage.clear();
+        clearedTypes.push("sessionStorage");
+      }
+      
+      // Очистка cookies
+      const cookies = document.cookie.split(";");
+      let cookiesCleared = false;
+      cookies.forEach(cookie => {
+        const eqPos = cookie.indexOf("=");
+        const name = eqPos > -1 ? cookie.substr(0, eqPos).trim() : cookie.trim();
+        if (name) {
+          document.cookie = `${name}=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/`;
+          cookiesCleared = true;
+        }
+      });
+      if (cookiesCleared) clearedTypes.push("cookies");
+      
+      // Очистка IndexedDB
+      try {
+        const deleteDB = indexedDB.deleteDatabase("DevToolsDemo");
+        deleteDB.onsuccess = () => {
+          console.log("IndexedDB удалена успешно");
+        };
+        deleteDB.onerror = () => {
+          console.log("IndexedDB не найдена или уже удалена");
+        };
+        clearedTypes.push("IndexedDB");
+      } catch (error) {
+        console.log("Ошибка при удалении IndexedDB:", error);
+      }
+      
+      // Сброс состояния
+      setTheme("dark");
+      setLanguage("ru");
+      setUsername("");
+      setSavedUsername("");
+      document.body.setAttribute("data-theme", "dark");
+      loadStorageData();
+      
+      toast({
+        title: "Всё хранилище очищено",
+        description: `Очищено: ${clearedTypes.join(", ")}`,
+      });
+    } catch (error) {
+      console.error("Ошибка при очистке хранилища:", error);
+      toast({
+        title: "Ошибка очистки",
+        description: "Не удалось полностью очистить хранилище",
+        variant: "destructive"
+      });
+    } finally {
+      setIsClearing(false);
+    }
   };
 
   const addSessionData = () => {
@@ -410,9 +462,10 @@ const Application = () => {
                 <Button 
                   onClick={clearStorage} 
                   variant="outline"
-                  className="w-full text-devtools-red border-devtools-red/30 hover:bg-devtools-red/10"
+                  disabled={isClearing}
+                  className="w-full text-devtools-red border-devtools-red/30 hover:bg-devtools-red/10 disabled:opacity-50"
                 >
-                  Очистить всё хранилище
+                  {isClearing ? "Очищается..." : "Очистить всё хранилище"}
                 </Button>
               </div>
             </CardContent>
